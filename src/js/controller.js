@@ -11,13 +11,6 @@ import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 import { async } from 'regenerator-runtime';
 
-const recipeContainer = document.querySelector('.recipe');
-
-// NEW API URL (instead of the one shown in the video)
-// https://forkify-api.jonas.io
-
-///////////////////////////////////////
-
 const controlRecipes = async function () {
   try {
     const id = window.location.hash.slice(1);
@@ -38,6 +31,7 @@ const controlRecipes = async function () {
     recipeView.render(model.state.recipe);
   } catch (err) {
     recipeView.renderError();
+    console.error(err);
   }
 };
 
@@ -55,7 +49,7 @@ const controlSearchResults = async function () {
     // 3) Render results
     resultsView.render(model.getSearchResultsPage());
 
-    // Render initial pagination buttons
+    // 4) Render initial pagination buttons
     paginationView.render(model.state.search);
   } catch (err) {
     console.log(err);
@@ -79,17 +73,14 @@ const controlServings = function (newServings) {
 };
 
 const controlAddBookmark = function () {
-  // Add or remove bookmark
-  if (!model.state.recipe.bookmarked) {
-    model.addBookmark(model.state.recipe);
-  } else {
-    model.deleteBookmark(model.state.recipe.id);
-  }
+  // 1) Add/remove bookmark
+  if (!model.state.recipe.bookmarked) model.addBookmark(model.state.recipe);
+  else model.deleteBookmark(model.state.recipe.id);
 
-  // Update recipe view
+  // 2) Update recipe view
   recipeView.update(model.state.recipe);
 
-  // Render bookmarks
+  // 3) Render bookmarks
   bookmarksView.render(model.state.bookmarks);
 };
 
@@ -120,10 +111,10 @@ const controlAddRecipe = async function (newRecipe) {
 
     // Close form window
     setTimeout(function () {
-      // addRecipeView.toggleWindow();
+      addRecipeView.toggleWindow();
     }, MODAL_CLOSE_SEC * 1000);
   } catch (err) {
-    console.log('💥', err);
+    console.error('💥', err);
     addRecipeView.renderError(err.message);
   }
 };

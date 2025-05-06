@@ -1,6 +1,6 @@
 import { async } from 'regenerator-runtime';
 import { API_URL, RES_PER_PAGE, KEY } from './config.js';
-// import { getJSON, sentJSON } from './helpers.js';
+// import { getJSON, sendJSON } from './helpers.js';
 import { AJAX } from './helpers.js';
 
 export const state = {
@@ -31,7 +31,7 @@ const createRecipeObject = function (data) {
 
 export const loadRecipe = async function (id) {
   try {
-    const data = await AJAX(`${API_URL}${id}`);
+    const data = await AJAX(`${API_URL}${id}?key=${KEY}`);
     state.recipe = createRecipeObject(data);
 
     if (state.bookmarks.some(bookmark => bookmark.id === id))
@@ -40,6 +40,7 @@ export const loadRecipe = async function (id) {
 
     console.log(state.recipe);
   } catch (err) {
+    // Temp error handling
     console.error(`${err} 💥💥💥💥`);
     throw err;
   }
@@ -51,6 +52,7 @@ export const loadSearchResults = async function (query) {
 
     const data = await AJAX(`${API_URL}?search=${query}&key=${KEY}`);
     console.log(data);
+
     state.search.results = data.data.recipes.map(rec => {
       return {
         id: rec.id,
@@ -78,9 +80,8 @@ export const getSearchResultsPage = function (page = state.search.page) {
 
 export const updateServings = function (newServings) {
   state.recipe.ingredients.forEach(ing => {
-    if (ing.quantity) {
-      ing.quantity = (ing.quantity * newServings) / state.recipe.servings;
-    }
+    ing.quantity = (ing.quantity * newServings) / state.recipe.servings;
+    // newQt = oldQt * newServings / oldServings // 2 * 8 / 4 = 4
   });
 
   state.recipe.servings = newServings;
@@ -115,14 +116,13 @@ const init = function () {
   const storage = localStorage.getItem('bookmarks');
   if (storage) state.bookmarks = JSON.parse(storage);
 };
-
 init();
 
 const clearBookmarks = function () {
   localStorage.clear('bookmarks');
 };
-
 // clearBookmarks();
+
 export const uploadRecipe = async function (newRecipe) {
   try {
     const ingredients = Object.entries(newRecipe)
@@ -132,8 +132,9 @@ export const uploadRecipe = async function (newRecipe) {
         // const ingArr = ing[1].replaceAll(' ', '').split(',');
         if (ingArr.length !== 3)
           throw new Error(
-            'Wrong ingredient format! Please use the correct format :)'
+            'Wrong ingredient fromat! Please use the correct format :)'
           );
+
         const [quantity, unit, description] = ingArr;
 
         return { quantity: quantity ? +quantity : null, unit, description };
